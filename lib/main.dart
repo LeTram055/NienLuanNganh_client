@@ -6,9 +6,6 @@ import 'ui/screens.dart';
 
 void main() async {
   await dotenv.load();
-  // print("App started");
-  // print("API_URL from .env: ${dotenv.env['API_URL']}");
-
   runApp(const MyApp());
 }
 

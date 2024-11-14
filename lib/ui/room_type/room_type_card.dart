@@ -70,7 +70,7 @@ class RoomTypeCard extends StatelessWidget {
                     'Giá: ${currencyFormat.format(roomType.price)}',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey[800],
+                      color: Colors.grey[600],
                     ),
                   ),
                 ],

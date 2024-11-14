@@ -9,6 +9,7 @@ class RoomType {
   final double area;
   final List<TypeImage> images;
   final List<Facility> facilities;
+  final int availableRooms;
 
   RoomType({
     required this.id,
@@ -18,6 +19,7 @@ class RoomType {
     required this.area,
     required this.images,
     required this.facilities,
+    required this.availableRooms,
   });
 
   factory RoomType.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class RoomType {
       facilities: (json['facilities'] as List<dynamic>)
           .map((facility) => Facility.fromJson(facility))
           .toList(),
+      availableRooms: json['available_rooms'],
     );
   }
 }
