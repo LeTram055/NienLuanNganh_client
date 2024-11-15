@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hotelmanagement/ui/customer/login_screen.dart';
+import 'package:hotelmanagement/ui/customer/register_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'ui/screens.dart';
@@ -16,14 +18,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: Colors.green,
+      seedColor: const Color.fromARGB(255, 76, 168, 175),
       secondary: Colors.red,
       surface: Colors.white,
       surfaceTint: Colors.green[200],
-      primary: Colors.green[900],
+      primary: const Color(0xFF026269),
       onPrimary: Colors.white,
       onSecondary: Colors.black,
-      shadow: Colors.green.withOpacity(0.5),
+      shadow: const Color.fromARGB(255, 76, 175, 172).withOpacity(0.5),
     );
 
     final themeData = ThemeData(
@@ -71,59 +73,60 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (ctx) => TypeManager()),
+        ChangeNotifierProvider(create: (ctx) => CustomerManager()),
       ],
-      child: MaterialApp(
-        title: 'Ánh Dương Hotel',
-        theme: themeData,
-        debugShowCheckedModeBanner: false,
-        home: SafeArea(child: HomeScreen()),
+      child: Consumer<CustomerManager>(
+        builder: (ctx, customerManager, child) {
+          return MaterialApp(
+            title: 'Ánh Dương Hotel',
+            theme: themeData,
+            debugShowCheckedModeBanner: false,
+            home: customerManager.isAuth ? const Home() : LoginScreen(),
+            routes: {
+              LoginScreen.routeName: (ctx) => LoginScreen(),
+              RegisterScreen.routeName: (ctx) => RegisterScreen(),
+              CustomerInfoScreen.routeName: (ctx) => CustomerInfoScreen(),
+            },
+          );
+        },
       ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
+class Home extends StatefulWidget {
+  static const routeName = '/home';
+  const Home({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<Home> createState() => _HomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _HomeState extends State<Home> {
+  int _selectedIndex = 0; // Index của mục bottombar đã chọn
 
-  void _incrementCounter() {
+  final List<Widget> _pages = [
+    HomeScreen(), // Trang Home
+    Container(),
+    Container(),
+    CustomerInfoScreen(),
+  ];
+
+  void _onItemTapped(int index) {
     setState(() {
-      _counter++;
+      _selectedIndex = index; // Cập nhật chỉ mục đã chọn
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
+      body: _pages[_selectedIndex], // Hiển thị trang dựa trên chỉ mục đã chọn
+      bottomNavigationBar: BottomBar(
+        // Sử dụng BottomBar
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
