@@ -36,7 +36,7 @@ class RoomTypeCard extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15.0),
         ),
-        color: const Color.fromARGB(255, 231, 251, 232),
+        color: const Color.fromARGB(255, 231, 250, 251),
         elevation: 5,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
