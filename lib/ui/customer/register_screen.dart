@@ -5,16 +5,28 @@ import '../../managers/customer_manager.dart';
 import 'login_screen.dart';
 import 'package:provider/provider.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   static const routeName = '/register';
 
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController accountNameController = TextEditingController();
+
   final TextEditingController emailController = TextEditingController();
+
   final TextEditingController passwordController = TextEditingController();
+
   final TextEditingController customerNameController = TextEditingController();
+
   final TextEditingController cccdController = TextEditingController();
+
   final TextEditingController addressController = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -165,78 +177,85 @@ class RegisterScreen extends StatelessWidget {
                                 },
                               ),
                               const SizedBox(height: 20),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).primaryColor,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 28.0, vertical: 12.0),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30.0),
-                                  ),
-                                  shadowColor: Theme.of(context).shadowColor,
-                                ),
-                                onPressed: () async {
-                                  if (_formKey.currentState!.validate()) {
-                                    final account = Account(
-                                      accountId: 0,
-                                      username: accountNameController.text,
-                                      accountRole: '',
-                                      accountActive: '',
-                                      accountPassword: passwordController.text,
-                                    );
-
-                                    final customer = Customer(
-                                      id: 0,
-                                      name: customerNameController.text,
-                                      cccd: cccdController.text,
-                                      email: emailController.text,
-                                      address: addressController.text,
-                                      accountId: 0,
-                                    );
-
-                                    await authManager.register(
-                                        account, customer);
-
-                                    if (authManager.statusMessage
-                                        .contains('thành công')) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Đăng ký thành công'),
-                                          backgroundColor: Colors.green,
-                                          duration: Duration(seconds: 2),
+                              _isLoading
+                                  ? const CircularProgressIndicator()
+                                  : ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            Theme.of(context).primaryColor,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 28.0, vertical: 12.0),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(30.0),
                                         ),
-                                      );
-                                      Future.delayed(const Duration(seconds: 2),
-                                          () {
-                                        Navigator.of(context)
-                                            .pushReplacementNamed(
-                                                LoginScreen.routeName);
-                                      });
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content:
-                                              Text(authManager.statusMessage),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
-                                  }
-                                },
-                                child: const Text('Đăng ký'),
-                              ),
-                              // if (authManager.statusMessage.isNotEmpty)
-                              //   Padding(
-                              //     padding: const EdgeInsets.all(8.0),
-                              //     child: Text(
-                              //       authManager.statusMessage,
-                              //       style: const TextStyle(color: Colors.red),
-                              //     ),
-                              //   ),
+                                        shadowColor:
+                                            Theme.of(context).shadowColor,
+                                      ),
+                                      onPressed: () async {
+                                        if (_formKey.currentState!.validate()) {
+                                          final account = Account(
+                                            accountId: 0,
+                                            username:
+                                                accountNameController.text,
+                                            accountRole: '',
+                                            accountActive: '',
+                                            accountPassword:
+                                                passwordController.text,
+                                          );
+
+                                          final customer = Customer(
+                                            id: 0,
+                                            name: customerNameController.text,
+                                            cccd: cccdController.text,
+                                            email: emailController.text,
+                                            address: addressController.text,
+                                            accountId: 0,
+                                          );
+
+                                          setState(() {
+                                            _isLoading = true;
+                                          });
+
+                                          await authManager.register(
+                                              account, customer);
+
+                                          setState(() {
+                                            _isLoading = false;
+                                          });
+
+                                          if (authManager.statusMessage
+                                              .contains('thành công')) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content:
+                                                    Text('Đăng ký thành công'),
+                                                backgroundColor: Colors.green,
+                                                duration: Duration(seconds: 2),
+                                              ),
+                                            );
+                                            Future.delayed(
+                                                const Duration(seconds: 2), () {
+                                              Navigator.of(context)
+                                                  .pushReplacementNamed(
+                                                      LoginScreen.routeName);
+                                            });
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                    authManager.statusMessage),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      },
+                                      child: const Text('Đăng ký'),
+                                    ),
                               TextButton(
                                 onPressed: () {
                                   Navigator.of(context).pushReplacementNamed(

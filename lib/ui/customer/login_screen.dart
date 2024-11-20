@@ -3,11 +3,20 @@ import '../../managers/customer_manager.dart';
 import 'register_screen.dart';
 import 'package:provider/provider.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   static const routeName = '/login';
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController accountNameController = TextEditingController();
+
   final TextEditingController passwordController = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +31,6 @@ class LoginScreen extends StatelessWidget {
               Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Vòng tròn nền gradient
                   Container(
                     width: 160,
                     height: 160,
@@ -113,73 +121,62 @@ class LoginScreen extends StatelessWidget {
                                 },
                               ),
                               const SizedBox(height: 20),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).primaryColor,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 28.0, vertical: 12.0),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30.0),
-                                  ),
-                                  shadowColor: Theme.of(context).shadowColor,
-                                ),
-                                onPressed: () async {
-                                  if (_formKey.currentState!.validate()) {
-                                    await authManager.login(
-                                      accountNameController.text,
-                                      passwordController.text,
-                                    );
-                                    if (authManager.statusMessage
-                                        .contains('thành công')) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Đăng nhập thành công'),
-                                          backgroundColor: Colors.green,
-                                          duration: Duration(seconds: 2),
+                              _isLoading
+                                  ? const CircularProgressIndicator()
+                                  : ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            Theme.of(context).primaryColor,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 28.0, vertical: 12.0),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(30.0),
                                         ),
-                                      );
-                                      Future.delayed(const Duration(seconds: 2),
-                                          () {
-                                        Navigator.of(context)
-                                            .pushReplacementNamed(
-                                                LoginScreen.routeName);
-                                      });
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content:
-                                              Text(authManager.statusMessage),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
-                                  }
-                                },
-                                child: const Text('Đăng nhập'),
-                              ),
-                              //  if (authManager.statusMessage.isNotEmpty)
-                              //     ScaffoldMessenger.of(context)
-                              //             .showSnackBar(
-                              //           SnackBar(
-                              //             content: Text(authManager.statusMessage),
-                              //             backgroundColor:
-                              //                 authManager.statusMessage.contains('thành công')
-                              //                     ? Colors.green
-                              //                     : Colors.red,
-                              //             duration: const Duration(seconds: 3),
-                              //           ),
-                              //         );
-                              //   Padding(
-                              //     padding: const EdgeInsets.all(8.0),
-                              //     child: Text(
-                              //       authManager.statusMessage,
-                              //       style: const TextStyle(color: Colors.red),
-                              //     ),
-                              //   ),
+                                        shadowColor:
+                                            Theme.of(context).shadowColor,
+                                      ),
+                                      onPressed: () async {
+                                        if (_formKey.currentState!.validate()) {
+                                          setState(() {
+                                            _isLoading = true;
+                                          });
+
+                                          await authManager.login(
+                                            accountNameController.text,
+                                            passwordController.text,
+                                          );
+
+                                          setState(() {
+                                            _isLoading = false;
+                                          });
+
+                                          if (authManager.statusMessage
+                                              .contains('thành công')) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Đăng nhập thành công'),
+                                                backgroundColor: Colors.green,
+                                                duration: Duration(seconds: 2),
+                                              ),
+                                            );
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                    authManager.statusMessage),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      },
+                                      child: const Text('Đăng nhập'),
+                                    ),
                               TextButton(
                                 onPressed: () {
                                   Navigator.of(context).pushReplacementNamed(
