@@ -74,6 +74,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (ctx) => TypeManager()),
         ChangeNotifierProvider(create: (ctx) => CustomerManager()),
+        ChangeNotifierProvider(create: (ctx) => RoomManager()),
+        ChangeNotifierProvider(create: (ctx) => ReservationManager()),
       ],
       child: Consumer<CustomerManager>(
         builder: (ctx, customerManager, child) {
@@ -107,7 +109,7 @@ class _HomeState extends State<Home> {
 
   final List<Widget> _pages = [
     HomeScreen(), // Trang Home
-    Container(),
+    RoomReservationScreen(), // Trang đặt phòng
     Container(),
     CustomerInfoScreen(),
   ];
