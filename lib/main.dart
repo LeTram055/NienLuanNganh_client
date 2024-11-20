@@ -88,6 +88,8 @@ class MyApp extends StatelessWidget {
               LoginScreen.routeName: (ctx) => LoginScreen(),
               RegisterScreen.routeName: (ctx) => RegisterScreen(),
               CustomerInfoScreen.routeName: (ctx) => CustomerInfoScreen(),
+              RoomReservationScreen.routeName: (ctx) =>
+                  const RoomReservationScreen(),
             },
           );
         },
@@ -109,7 +111,7 @@ class _HomeState extends State<Home> {
 
   final List<Widget> _pages = [
     HomeScreen(), // Trang Home
-    RoomReservationScreen(), // Trang đặt phòng
+    Container(), // Trang đặt phòng
     Container(),
     CustomerInfoScreen(),
   ];

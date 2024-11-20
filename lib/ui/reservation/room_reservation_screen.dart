@@ -4,6 +4,9 @@ import '../../managers/reservation_manager.dart';
 import '../../managers/customer_manager.dart';
 
 class RoomReservationScreen extends StatefulWidget {
+  const RoomReservationScreen({super.key});
+  static const routeName = '/reservation';
+
   @override
   _RoomReservationScreenState createState() => _RoomReservationScreenState();
 }
@@ -12,6 +15,7 @@ class _RoomReservationScreenState extends State<RoomReservationScreen> {
   final TextEditingController _checkinController = TextEditingController();
   final TextEditingController _checkoutController = TextEditingController();
   final Map<int, bool> _selectedRooms = {};
+  bool _isRoomListVisible = false;
 
   void _selectDate(
       BuildContext context, TextEditingController controller) async {
@@ -23,7 +27,41 @@ class _RoomReservationScreenState extends State<RoomReservationScreen> {
     );
 
     if (picked != null) {
-      controller.text = "${picked.year}-${picked.month}-${picked.day}";
+      setState(() {
+        controller.text = "${picked.year}-${picked.month}-${picked.day}";
+
+        if (controller == _checkinController &&
+            _checkoutController.text.isNotEmpty) {
+          final checkinDate = DateTime.parse(_checkinController.text);
+          final checkoutDate = DateTime.parse(_checkoutController.text);
+
+          if (checkinDate.isAfter(checkoutDate)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content:
+                      Text("Ngày trả phải sau hoặc cùng ngày với ngày nhận!")),
+            );
+            _checkoutController.clear();
+          }
+        }
+
+        if (controller == _checkoutController &&
+            _checkinController.text.isNotEmpty) {
+          final checkinDate = DateTime.parse(_checkinController.text);
+          final checkoutDate = DateTime.parse(_checkoutController.text);
+
+          if (checkoutDate.isBefore(checkinDate)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content:
+                      Text("Ngày trả phải sau hoặc cùng ngày với ngày nhận!")),
+            );
+            _checkoutController.clear();
+          }
+        }
+
+        _isRoomListVisible = false; // Ẩn danh sách khi thay đổi ngày
+      });
     }
   }
 
@@ -32,7 +70,7 @@ class _RoomReservationScreenState extends State<RoomReservationScreen> {
     final reservationManager = Provider.of<ReservationManager>(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Đặt phòng")),
+      appBar: AppBar(title: const Text("Đặt phòng")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -62,7 +100,7 @@ class _RoomReservationScreenState extends State<RoomReservationScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 48),
+                minimumSize: const Size(double.infinity, 48),
                 backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
               ),
@@ -70,77 +108,84 @@ class _RoomReservationScreenState extends State<RoomReservationScreen> {
                 if (_checkinController.text.isEmpty ||
                     _checkoutController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Vui lòng chọn đầy đủ ngày!")),
+                    const SnackBar(content: Text("Vui lòng chọn đầy đủ ngày!")),
                   );
                   return;
                 }
-
-                print(
-                    "Fetching rooms for: checkin=${_checkinController.text}, checkout=${_checkoutController.text}");
 
                 await reservationManager.fetchAvailableRooms(
                   _checkinController.text,
                   _checkoutController.text,
                 );
-
-                // Kiểm tra nếu danh sách phòng trống đã được cập nhật
-                print(
-                    "Available rooms: ${reservationManager.availableRoomTypes.length}");
+                setState(() {
+                  _isRoomListVisible =
+                      true; // Hiển thị danh sách phòng sau khi tìm kiếm
+                });
               },
-              child: Text("Tìm phòng"),
+              child: const Text("Tìm phòng"),
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: reservationManager.availableRoomTypes.isEmpty
-                  ? const Center(
+              child: _isRoomListVisible
+                  ? reservationManager.availableRoomTypes.isEmpty
+                      ? const Center(
+                          child: Text(
+                            "Chưa có dữ liệu phòng",
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount:
+                              reservationManager.availableRoomTypes.length,
+                          itemBuilder: (context, index) {
+                            final roomType =
+                                reservationManager.availableRoomTypes[index];
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              elevation: 4,
+                              color: const Color.fromARGB(255, 231, 250, 251),
+                              child: ExpansionTile(
+                                title: Text(
+                                  roomType.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  "Giá: ${roomType.price.toStringAsFixed(0)} VND",
+                                  style: const TextStyle(
+                                      color: Colors.orangeAccent),
+                                ),
+                                children:
+                                    roomType.listAvailableRooms.map((room) {
+                                  return CheckboxListTile(
+                                    value: _selectedRooms[room.id] ?? false,
+                                    onChanged: (isSelected) {
+                                      setState(() {
+                                        _selectedRooms[room.id] =
+                                            isSelected ?? false;
+                                      });
+                                    },
+                                    title: Text(room.name),
+                                  );
+                                }).toList(),
+                              ),
+                            );
+                          },
+                        )
+                  : const Padding(
+                      padding: EdgeInsets.all(16.0),
                       child: Text(
-                        "Chưa có dữ liệu phòng",
+                        "Vui lòng chọn ngày và nhấn 'Tìm phòng' để hiển thị danh sách.",
                         style: TextStyle(fontSize: 16, color: Colors.grey),
                       ),
-                    )
-                  : ListView.builder(
-                      itemCount: reservationManager.availableRoomTypes.length,
-                      itemBuilder: (context, index) {
-                        final roomType =
-                            reservationManager.availableRoomTypes[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          elevation: 4,
-                          color: const Color.fromARGB(255, 231, 250, 251),
-                          child: ExpansionTile(
-                            title: Text(
-                              roomType.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            subtitle: Text(
-                              "Giá: ${roomType.price.toStringAsFixed(0)} VND",
-                              style:
-                                  const TextStyle(color: Colors.orangeAccent),
-                            ),
-                            children: roomType.listAvailableRooms.map((room) {
-                              return CheckboxListTile(
-                                value: _selectedRooms[room.id] ?? false,
-                                onChanged: (isSelected) {
-                                  setState(() {
-                                    _selectedRooms[room.id] =
-                                        isSelected ?? false;
-                                  });
-                                },
-                                title: Text(room.name),
-                              );
-                            }).toList(),
-                          ),
-                        );
-                      },
                     ),
             ),
             if (_selectedRooms.values.contains(true))
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 48),
+                  minimumSize: const Size(double.infinity, 48),
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                 ),
@@ -152,7 +197,7 @@ class _RoomReservationScreenState extends State<RoomReservationScreen> {
 
                   if (selectedRoomIds.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
+                      const SnackBar(
                           content:
                               Text("Vui lòng chọn ít nhất một phòng để đặt!")),
                     );
@@ -184,14 +229,16 @@ class _RoomReservationScreenState extends State<RoomReservationScreen> {
                       _selectedRooms.clear();
                       _checkinController.clear();
                       _checkoutController.clear();
+                      _isRoomListVisible = false;
                     });
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Có lỗi xảy ra khi đặt phòng!")),
+                      const SnackBar(
+                          content: Text("Có lỗi xảy ra khi đặt phòng!")),
                     );
                   }
                 },
-                child: Text("Xác nhận phòng đã chọn"),
+                child: const Text("Xác nhận đặt phòng"),
               ),
           ],
         ),

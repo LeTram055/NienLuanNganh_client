@@ -11,4 +11,6 @@ export 'customer/register_screen.dart';
 export 'customer/login_screen.dart';
 export 'customer/customer_info_screen.dart';
 
+export 'room_type/room_type_detail_screen.dart';
+
 export 'reservation/room_reservation_screen.dart';

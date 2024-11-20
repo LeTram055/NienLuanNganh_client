@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../managers/type_manager.dart';
 
 class RoomTypeDetailScreen extends StatefulWidget {
+  static const routeName = '/room-type-detail';
   final int roomTypeId;
 
   const RoomTypeDetailScreen({super.key, required this.roomTypeId});
@@ -154,7 +155,25 @@ class _RoomTypeDetailScreenState extends State<RoomTypeDetailScreen> {
                             );
                           }).toList(),
                         ),
+                        const SizedBox(height: 16.0),
                       ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 48),
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/reservation',
+                        );
+                      },
+                      child: const Text("Đặt phòng ngay"),
                     ),
                   ),
                 ],
