@@ -5,7 +5,7 @@ import '../../managers/customer_manager.dart';
 
 class RoomReservationScreen extends StatefulWidget {
   const RoomReservationScreen({super.key});
-  static const routeName = '/reservation';
+  static const routeName = '/room_reservation';
 
   @override
   _RoomReservationScreenState createState() => _RoomReservationScreenState();

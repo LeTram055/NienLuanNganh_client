@@ -2,6 +2,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import '../models/room_type.dart';
+import '../models/reservation.dart';
+import '../models/room.dart';
 
 class ReservationService {
   final String? baseUrl = dotenv.env['API_URL'];
@@ -49,6 +51,52 @@ class ReservationService {
     } else {
       print("Thất bại để tạo đơn đặt phòng: ${response.body}");
       throw Exception('Thất bại để tạo đơn đặt phòng');
+    }
+  }
+
+  Future<List<Reservation>> fetchCustomerReservations(int customerId) async {
+    final url = Uri.parse('$baseUrl/reservations/$customerId');
+    final response = await http.get(url);
+
+    print('URL: $url');
+    print('Status code: ${response.statusCode}');
+    print('Response body: ${response.body}');
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+
+      final reservation =
+          data.map((json) => Reservation.fromJson(json)).toList();
+
+      return reservation;
+    } else {
+      throw Exception('Thất bại khi lấy danh sách đặt phòng');
+    }
+  }
+
+  Future<List<Room>> fetchRoomDetails(List<int> roomIds) async {
+    //final url = Uri.parse('$baseUrl/rooms');
+    final queryParameters = roomIds.map((id) => 'room_ids[]=$id').join('&');
+    final url = Uri.parse('$baseUrl/rooms?$queryParameters');
+    final response = await http.get(url);
+    print(' Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Room.fromJson(json)).toList();
+    } else {
+      throw Exception('Thất bại khi lấy thông tin phòng');
+    }
+  }
+
+  Future<void> cancelReservation(int reservationId) async {
+    final url = Uri.parse('$baseUrl/reservations/$reservationId/cancel');
+    final response = await http.delete(url);
+
+    if (response.statusCode == 200) {
+      print('Hủy đơn đặt phòng thành công');
+    } else {
+      throw Exception('Thất bại khi hủy đơn đặt phòng');
     }
   }
 }

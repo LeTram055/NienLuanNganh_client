@@ -74,7 +74,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (ctx) => TypeManager()),
         ChangeNotifierProvider(create: (ctx) => CustomerManager()),
-        ChangeNotifierProvider(create: (ctx) => RoomManager()),
+        //ChangeNotifierProvider(create: (ctx) => RoomManager()),
         ChangeNotifierProvider(create: (ctx) => ReservationManager()),
       ],
       child: Consumer<CustomerManager>(
@@ -90,6 +90,7 @@ class MyApp extends StatelessWidget {
               CustomerInfoScreen.routeName: (ctx) => CustomerInfoScreen(),
               RoomReservationScreen.routeName: (ctx) =>
                   const RoomReservationScreen(),
+              ReservationsScreen.routeName: (ctx) => ReservationsScreen(),
             },
           );
         },
@@ -110,9 +111,10 @@ class _HomeState extends State<Home> {
   int _selectedIndex = 0; // Index của mục bottombar đã chọn
 
   final List<Widget> _pages = [
-    HomeScreen(), // Trang Home
-    Container(), // Trang đặt phòng
-    Container(),
+    HomeScreen(),
+    Container(), // Trang Home
+    ReservationsScreen(),
+
     CustomerInfoScreen(),
   ];
 
