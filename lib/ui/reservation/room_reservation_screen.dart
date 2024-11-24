@@ -222,6 +222,7 @@ class _RoomReservationScreenState extends State<RoomReservationScreen> {
                         content: Text(
                           "Đặt phòng thành công cho ${selectedRoomIds.length} phòng!",
                         ),
+                        backgroundColor: Colors.green,
                       ),
                     );
 
@@ -234,7 +235,8 @@ class _RoomReservationScreenState extends State<RoomReservationScreen> {
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text("Có lỗi xảy ra khi đặt phòng!")),
+                          content: Text("Có lỗi xảy ra khi đặt phòng!"),
+                          backgroundColor: Colors.red),
                     );
                   }
                 },

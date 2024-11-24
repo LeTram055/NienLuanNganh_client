@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:hotelmanagement/managers/customer_manager.dart';
 import 'package:provider/provider.dart';
 import '../../managers/reservation_manager.dart';
@@ -30,35 +31,40 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
   Widget build(BuildContext context) {
     final reservationManager = Provider.of<ReservationManager>(context);
     final typeManager = Provider.of<TypeManager>(context);
+
+    String formatCurrency(double value) {
+      final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'VND');
+      return formatter.format(value);
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Đơn đặt phòng'),
+        title: const Text('Đơn đặt phòng'),
       ),
       body: FutureBuilder(
         future: _reservationsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Lỗi khi tải dữ liệu'));
+            return const Center(child: Text('Lỗi khi tải dữ liệu'));
           }
 
           final reservations = reservationManager.reservations;
 
           if (reservations.isEmpty) {
-            return Center(child: Text('Không có đơn đặt phòng nào'));
+            return const Center(child: Text('Không có đơn đặt phòng nào'));
           }
 
           return ListView.builder(
             itemCount: reservations.length,
             itemBuilder: (context, index) {
               final reservation = reservations[index];
-
               final Future<List<Room>> roomDetails =
                   reservationManager.fetchRoomDetails(reservation.roomIds);
 
               return Card(
-                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 color: const Color.fromARGB(255, 231, 250, 251),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,11 +75,37 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                         children: [
                           Text(
                             'Ngày đặt: ${reservation.date}',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Text('Ngày nhận phòng: ${reservation.checkin}'),
                           Text('Ngày trả phòng: ${reservation.checkout}'),
                           Text('Trạng thái: ${reservation.status}'),
+                          FutureBuilder<List<Room>>(
+                            future: roomDetails,
+                            builder: (context, roomSnapshot) {
+                              if (roomSnapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Text('Đang tính tổng tiền...');
+                              } else if (roomSnapshot.hasError) {
+                                return const Text('Không thể tính tổng tiền');
+                              }
+
+                              // Tính tổng tiền
+                              final totalPrice =
+                                  roomSnapshot.data!.fold(0.0, (sum, room) {
+                                final roomType =
+                                    typeManager.getRoomType(room.typeId);
+                                return sum + (roomType.price);
+                              });
+
+                              return Text(
+                                'Tổng tiền: ${formatCurrency(totalPrice)}',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green),
+                              );
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -82,9 +114,9 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                       builder: (context, roomSnapshot) {
                         if (roomSnapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return CircularProgressIndicator();
+                          return const CircularProgressIndicator();
                         } else if (roomSnapshot.hasError) {
-                          return Text('Lỗi khi lấy thông tin phòng');
+                          return const Text('Lỗi khi lấy thông tin phòng');
                         }
 
                         final rooms = roomSnapshot.data!;
@@ -96,11 +128,14 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                         }
 
                         List<Widget> roomTypeWidgets = [];
-                        groupedRooms.forEach((roomTypeId, roomList) {
-                          final roomTypeName =
-                              typeManager.getRoomTypeName(roomTypeId);
 
-                          // Thêm từng loại phòng vào danh sách widget
+                        groupedRooms.forEach((roomTypeId, roomList) {
+                          final roomType = typeManager.getRoomType(roomTypeId);
+                          final roomTypeName = roomType.name;
+                          final pricePerRoom = roomType.price;
+                          final roomCount = roomList.length;
+                          final subtotal = pricePerRoom * roomCount;
+
                           roomTypeWidgets.add(
                             Padding(
                               padding: const EdgeInsets.only(
@@ -110,7 +145,21 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                                 alignment: Alignment.centerLeft, // Canh trái
                                 child: Text(
                                   '$roomTypeName: ${roomList.map((room) => room.name).join(", ")}',
-                                  style: TextStyle(fontSize: 16),
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ),
+                            ),
+                          );
+                          roomTypeWidgets.add(
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 24.0, bottom: 8.0),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'Giá: ${formatCurrency(pricePerRoom)} x $roomCount = ${formatCurrency(subtotal)}',
+                                  style: TextStyle(
+                                      fontSize: 14, color: Colors.grey[700]),
                                 ),
                               ),
                             ),
@@ -120,38 +169,10 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                         return ExpansionTile(
                           title: Text(
                             'Danh sách phòng đã đặt (${rooms.length})',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          children:
-                              roomTypeWidgets, // Thêm tất cả các loại phòng vào đây
+                          children: roomTypeWidgets,
                         );
-
-                        // return Column(
-                        //   crossAxisAlignment: CrossAxisAlignment.start,
-                        //   children: [
-                        //     Column(
-                        //       children: groupedRooms.entries.map((entry) {
-                        //         final roomTypeId = entry.key;
-                        //         final roomList = entry.value;
-                        //         final roomTypeName =
-                        //             typeManager.getRoomTypeName(roomTypeId);
-
-                        //         return ExpansionTile(
-                        //           title: Text(
-                        //             'Danh sách phòng đã đặt (${roomList.length})',
-                        //             style:
-                        //                 TextStyle(fontWeight: FontWeight.bold),
-                        //           ),
-                        //           children: roomList.map((room) {
-                        //             return ListTile(
-                        //                 title: Text(
-                        //                     '${roomTypeName}: ${room.name}'));
-                        //           }).toList(),
-                        //         );
-                        //       }).toList(),
-                        //     ),
-                        //   ],
-                        // );
                       },
                     ),
                     Padding(
@@ -160,24 +181,25 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                         alignment: Alignment.center, // Canh phải
                         child: reservation.status == 'Chờ xác nhận'
                             ? ElevatedButton.icon(
-                                icon: Icon(Icons.cancel, color: Colors.red),
-                                label: Text('Hủy đơn'),
+                                icon:
+                                    const Icon(Icons.cancel, color: Colors.red),
+                                label: const Text('Hủy đơn'),
                                 onPressed: () async {
                                   final confirmCancel = await showDialog(
                                     context: context,
                                     builder: (ctx) => AlertDialog(
-                                      title: Text('Xác nhận hủy đơn'),
-                                      content: Text(
+                                      title: const Text('Xác nhận hủy đơn'),
+                                      content: const Text(
                                           'Bạn có chắc chắn muốn hủy đơn đặt phòng này không?'),
                                       actions: [
                                         TextButton(
-                                          child: Text('Hủy'),
+                                          child: const Text('Hủy'),
                                           onPressed: () {
                                             Navigator.of(ctx).pop(false);
                                           },
                                         ),
                                         TextButton(
-                                          child: Text('Đồng ý'),
+                                          child: const Text('Đồng ý'),
                                           onPressed: () {
                                             Navigator.of(ctx).pop(true);
                                           },
@@ -190,23 +212,36 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                                     try {
                                       await reservationManager
                                           .cancelReservation(reservation.id);
+
+                                      setState(() {
+                                        _reservationsFuture = reservationManager
+                                            .fetchReservations(
+                                                Provider.of<CustomerManager>(
+                                                        context,
+                                                        listen: false)
+                                                    .customer!
+                                                    .id);
+                                      });
+
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
-                                        SnackBar(
-                                            content:
-                                                Text('Đã hủy đơn đặt phòng')),
+                                        const SnackBar(
+                                          content: Text('Đã hủy đơn đặt phòng'),
+                                          backgroundColor: Colors.green,
+                                        ),
                                       );
                                     } catch (error) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
-                                        SnackBar(
-                                            content: Text('Hủy đơn thất bại')),
+                                        const SnackBar(
+                                            content: Text('Hủy đơn thất bại'),
+                                            backgroundColor: Colors.red),
                                       );
                                     }
                                   }
                                 },
                               )
-                            : SizedBox(),
+                            : const SizedBox(),
                       ),
                     ),
                   ],

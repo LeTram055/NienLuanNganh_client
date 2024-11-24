@@ -4,6 +4,7 @@ import '../models/room_type.dart';
 import '../services/reservation_service.dart';
 import '../models/reservation.dart';
 import '../models/room.dart';
+import '../managers/type_manager.dart';
 
 class ReservationManager with ChangeNotifier {
   final ReservationService _reservationService = ReservationService();
@@ -68,10 +69,29 @@ class ReservationManager with ChangeNotifier {
     }
   }
 
+  double calculateTotalPriceForReservation(Reservation reservation) {
+    double totalPrice = 0.0;
+
+    // Duyệt qua các roomIds trong Reservation
+    for (var roomId in reservation.roomIds) {
+      // Lấy thông tin chi tiết của phòng
+      try {
+        final typeManager = TypeManager();
+        final roomType = typeManager.getRoomType(roomId);
+
+        totalPrice += roomType.price;
+      } catch (error) {
+        print('Lỗi khi lấy thông tin phòng: $error');
+      }
+    }
+
+    return totalPrice;
+  }
+
   Future<void> cancelReservation(int reservationId) async {
     try {
       await _reservationService.cancelReservation(reservationId);
-      _reservations.removeWhere((res) => res.id == reservationId);
+
       notifyListeners();
     } catch (error) {
       print(error);

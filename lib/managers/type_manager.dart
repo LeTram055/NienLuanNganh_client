@@ -44,6 +44,13 @@ class TypeManager extends ChangeNotifier {
     return roomType.name;
   }
 
+  RoomType getRoomType(int typeId) {
+    // Kiểm tra nếu đã có thông tin loại phòng trong danh sách
+    final roomType = _roomTypes.firstWhere((type) => type.id == typeId);
+
+    return roomType;
+  }
+
   Future<RoomType?> getRoomTypeDetails(int typeId) async {
     // Kiểm tra nếu loại phòng đã được lấy trong danh sách trước đó
     final existingType = _roomTypes.firstWhere(
