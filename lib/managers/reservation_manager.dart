@@ -5,9 +5,11 @@ import '../services/reservation_service.dart';
 import '../models/reservation.dart';
 import '../models/room.dart';
 import '../managers/type_manager.dart';
+import '../managers/notification_manager.dart';
 
 class ReservationManager with ChangeNotifier {
   final ReservationService _reservationService = ReservationService();
+  final NotificationManager _notificationManager = NotificationManager();
 
   List<RoomType> _availableRoomTypes = [];
   List<RoomType> get availableRoomTypes => _availableRoomTypes;
@@ -41,6 +43,13 @@ class ReservationManager with ChangeNotifier {
         checkoutDate: checkoutDate,
         roomIds: roomIds,
       );
+
+      // Thêm thông báo sau khi tạo đặt phòng
+      final message = "Đặt phòng thành công từ $checkinDate đến $checkoutDate.";
+      print(customerId);
+      print('message: $message');
+      await _notificationManager.addNotification(customerId, message);
+      print("message: $message");
       notifyListeners();
     } catch (error) {
       print(error);
@@ -88,10 +97,13 @@ class ReservationManager with ChangeNotifier {
     return totalPrice;
   }
 
-  Future<void> cancelReservation(int reservationId) async {
+  Future<void> cancelReservation(int reservationId, int customer) async {
     try {
       await _reservationService.cancelReservation(reservationId);
 
+      // Thêm thông báo sau khi hủy đặt phòng
+      final message = "Hủy đơn đặt phòng $reservationId thành công.";
+      await _notificationManager.addNotification(customer, message);
       notifyListeners();
     } catch (error) {
       print(error);

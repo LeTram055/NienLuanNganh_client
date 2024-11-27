@@ -31,6 +31,8 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
   Widget build(BuildContext context) {
     final reservationManager = Provider.of<ReservationManager>(context);
     final typeManager = Provider.of<TypeManager>(context);
+    final customerId =
+        Provider.of<CustomerManager>(context, listen: false).customer!.id;
 
     String formatCurrency(double value) {
       final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'VND');
@@ -211,7 +213,8 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                                   if (confirmCancel == true) {
                                     try {
                                       await reservationManager
-                                          .cancelReservation(reservation.id);
+                                          .cancelReservation(
+                                              reservation.id, customerId);
 
                                       setState(() {
                                         _reservationsFuture = reservationManager

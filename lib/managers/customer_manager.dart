@@ -35,6 +35,7 @@ class CustomerManager with ChangeNotifier {
   Future<void> login(String username, String password) async {
     try {
       final result = await _authService.loginCustomer(username, password);
+      print('result: $result');
 
       if (result == 'Đăng nhập thành công') {
         final userInfo = await _authService.getUserInfo(username);

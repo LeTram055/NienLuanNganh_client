@@ -76,6 +76,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => CustomerManager()),
         //ChangeNotifierProvider(create: (ctx) => RoomManager()),
         ChangeNotifierProvider(create: (ctx) => ReservationManager()),
+        ChangeNotifierProvider(
+          create: (ctx) => NotificationManager(),
+        ),
       ],
       child: Consumer<CustomerManager>(
         builder: (ctx, customerManager, child) {
@@ -91,6 +94,7 @@ class MyApp extends StatelessWidget {
               RoomReservationScreen.routeName: (ctx) =>
                   const RoomReservationScreen(),
               ReservationsScreen.routeName: (ctx) => ReservationsScreen(),
+              NotificationsScreen.routeName: (ctx) => NotificationsScreen(),
             },
           );
         },
@@ -112,7 +116,7 @@ class _HomeState extends State<Home> {
 
   final List<Widget> _pages = [
     HomeScreen(),
-    Container(), // Trang Home
+    NotificationsScreen(), // Trang Home
     ReservationsScreen(),
 
     CustomerInfoScreen(),
