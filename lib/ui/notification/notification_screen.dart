@@ -45,6 +45,7 @@ class NotificationsScreen extends StatelessWidget {
                         vertical: 8.0,
                         horizontal: 16.0,
                       ),
+                      color: const Color.fromARGB(255, 231, 250, 251),
                       child: ListTile(
                         leading: const Icon(Icons.notifications),
                         title: Text(

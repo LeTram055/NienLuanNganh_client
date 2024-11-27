@@ -8,10 +8,21 @@ class TypeManager extends ChangeNotifier {
   List<RoomType> _roomTypes = [];
   RoomType? _selectedType;
   String? _errorMessage;
+  List<RoomType> _filteredRoomTypes = [];
 
   List<RoomType> get roomTypes => _roomTypes;
+
+  // List<RoomType> get roomTypes =>
+  //     _filteredRoomTypes.isEmpty ? _roomTypes : _filteredRoomTypes;
+
+  List<RoomType> get filteredRoomTypes => _filteredRoomTypes;
   RoomType? get selectedType => _selectedType;
   String? get errorMessage => _errorMessage;
+
+  void resetFilters() {
+    _filteredRoomTypes = _roomTypes;
+    notifyListeners();
+  }
 
   Future<void> fetchRoomTypes() async {
     try {
@@ -21,6 +32,37 @@ class TypeManager extends ChangeNotifier {
       _errorMessage = null;
     } catch (error) {
       _errorMessage = error.toString();
+    }
+    notifyListeners();
+  }
+
+  void searchRoomTypesWithFilters({
+    required String query,
+    String? capacity,
+    String? area,
+  }) {
+    _filteredRoomTypes = _roomTypes.where((type) {
+      final matchesQuery = query.isEmpty ||
+          type.name.toLowerCase().contains(query.toLowerCase()) ||
+          type.price.toString().contains(query);
+      final matchesCapacity =
+          capacity == null || type.capacity.toString() == capacity;
+      final matchesArea = area == null || type.area.toString() == area;
+
+      return matchesQuery && matchesCapacity && matchesArea;
+    }).toList();
+
+    notifyListeners();
+  }
+
+  void searchRoomTypes(String query) {
+    if (query.isEmpty) {
+      _filteredRoomTypes = [];
+    } else {
+      _filteredRoomTypes = _roomTypes
+          .where(
+              (type) => type.name.toLowerCase().contains(query.toLowerCase()))
+          .toList();
     }
     notifyListeners();
   }
