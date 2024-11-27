@@ -242,6 +242,7 @@ class _RoomReservationScreenState extends State<RoomReservationScreen> {
                 },
                 child: const Text("Xác nhận đặt phòng"),
               ),
+            const SizedBox(height: 16),
           ],
         ),
       ),

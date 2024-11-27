@@ -99,10 +99,16 @@ class ReservationManager with ChangeNotifier {
 
   Future<void> cancelReservation(int reservationId, int customer) async {
     try {
+// Truy vấn thông tin chi tiết của đặt phòng
+      final reservation = _reservations.firstWhere(
+        (res) => res.id == reservationId,
+      );
+
       await _reservationService.cancelReservation(reservationId);
 
       // Thêm thông báo sau khi hủy đặt phòng
-      final message = "Hủy đơn đặt phòng $reservationId thành công.";
+      final message =
+          "Đơn đặt phòng từ ${reservation.checkin} đến ${reservation.checkout} đã bị hủy.";
       await _notificationManager.addNotification(customer, message);
       notifyListeners();
     } catch (error) {
