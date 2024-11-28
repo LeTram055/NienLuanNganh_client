@@ -38,86 +38,86 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             borderRadius: BorderRadius.circular(16.0), // Bo góc cho dialog
           ),
           clipBehavior: Clip.antiAlias,
-          child: SizedBox(
+          child: Container(
             height: 500,
-            width: 400,
-            child: Column(
-              //crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: Stack(
               children: [
-                Expanded(
-                  child: filePath.isEmpty
-                      ? const Center(child: CircularProgressIndicator())
-                      : PDFView(
-                          filePath: filePath,
-                          enableSwipe: true,
-                          swipeHorizontal: true,
-                          autoSpacing: false,
-                          pageSnap: true,
-                          pageFling: true,
-                          onError: (error) {
-                            print(error.toString());
-                          },
-                          onRender: (pages) {
-                            print('Rendered PDF with $pages pages');
-                          },
-                        ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    TextButton.icon(
-                      icon: const Icon(Icons.close, color: Colors.grey),
-                      label: const Text(
-                        'Đóng',
-                        style: TextStyle(color: Colors.grey),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    //crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: filePath.isEmpty
+                            ? const Center(child: CircularProgressIndicator())
+                            : PDFView(
+                                filePath: filePath,
+                                enableSwipe: true,
+                                swipeHorizontal: true,
+                                autoSpacing: false,
+                                pageSnap: true,
+                                pageFling: true,
+                                onError: (error) {
+                                  print(error.toString());
+                                },
+                                onRender: (pages) {
+                                  print('Rendered PDF with $pages pages');
+                                },
+                              ),
                       ),
-                      style: TextButton.styleFrom(
-                        side: const BorderSide(color: Colors.grey),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(35.0),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 12.0,
-                        ),
-                      ),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.download, color: Colors.white),
-                      label: const Text('Tải về'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 12.0,
-                        ),
-                      ),
-                      onPressed: () async {
-                        try {
-                          final downloadPath = await reservationManager
-                              .saveInvoiceToDownloads(filePath);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content:
-                                  Text('Tệp đã được tải về: $downloadPath'),
-                              backgroundColor: Colors.green,
+                      const SizedBox(height: 16),
+                      // Nút tải về
+                      Center(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.download, color: Colors.white),
+                          label: const Text('Tải về'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 12.0,
                             ),
-                          );
-                        } catch (error) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Không thể tải về tệp'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                  ],
+                          ),
+                          onPressed: () async {
+                            try {
+                              final downloadPath = await reservationManager
+                                  .saveInvoiceToDownloads(filePath);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content:
+                                      Text('Tệp đã được tải về: $downloadPath'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            } catch (error) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Không thể tải về tệp'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 8),
+
+                // Nút đóng dialog
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.grey),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
               ],
             ),
           ),
@@ -125,37 +125,6 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       },
     );
   }
-
-  // void _showInvoiceDialog(BuildContext context, String filePath) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) {
-  //       return Dialog(
-  //         child: SizedBox(
-  //           height: 600,
-  //           width: 400,
-  //           child: filePath.isEmpty
-  //               ? const Center(child: CircularProgressIndicator())
-  //               : PDFView(
-  //                   filePath: filePath,
-  //                   enableSwipe: true,
-  //                   swipeHorizontal: true,
-  //                   autoSpacing: false,
-  //                   pageSnap: true,
-  //                   pageFling: true,
-  //                   onError: (error) {
-  //                     print(error.toString());
-  //                   },
-  //                   onRender: (pages) {
-  //                     print('Rendered PDF with $pages pages');
-  //                   },
-  //                 ),
-  //         ),
-
-  //       );
-  //     },
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -230,8 +199,18 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                                 return sum + (roomType.price);
                               });
 
+                              final checkinDate =
+                                  DateTime.parse(reservation.checkin);
+                              final checkoutDate =
+                                  DateTime.parse(reservation.checkout);
+                              final daysStayed =
+                                  checkoutDate.difference(checkinDate).inDays +
+                                      1;
+
+                              final totalAmount = totalPrice * daysStayed;
+
                               return Text(
-                                'Tổng tiền: ${formatCurrency(totalPrice)}',
+                                'Tổng tiền: ${formatCurrency(totalAmount)}',
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.green),
