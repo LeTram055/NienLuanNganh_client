@@ -17,6 +17,25 @@ class ReservationManager with ChangeNotifier {
   List<Reservation> _reservations = [];
 
   List<Reservation> get reservations => _reservations;
+
+  Future<String> saveInvoiceToDownloads(String filePath) async {
+    try {
+      return await _reservationService.saveToDownloads(filePath);
+    } catch (error) {
+      print('Lỗi khi lưu file: $error');
+      throw Exception('Không thể lưu file');
+    }
+  }
+
+  Future<String> fetchInvoicePdf(int reservationId) async {
+    try {
+      return await _reservationService.fetchInvoicePdf(reservationId);
+    } catch (error) {
+      print(error);
+      throw error;
+    }
+  }
+
   Future<void> fetchAvailableRooms(String checkin, String checkout) async {
     try {
       _availableRoomTypes =

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:intl/intl.dart';
 import 'package:hotelmanagement/managers/customer_manager.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +27,135 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
 
     _reservationsFuture = reservationManager.fetchReservations(customerId);
   }
+
+  void _showInvoiceDialog(BuildContext context, String filePath,
+      ReservationManager reservationManager) async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0), // Bo góc cho dialog
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: SizedBox(
+            height: 500,
+            width: 400,
+            child: Column(
+              //crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: filePath.isEmpty
+                      ? const Center(child: CircularProgressIndicator())
+                      : PDFView(
+                          filePath: filePath,
+                          enableSwipe: true,
+                          swipeHorizontal: true,
+                          autoSpacing: false,
+                          pageSnap: true,
+                          pageFling: true,
+                          onError: (error) {
+                            print(error.toString());
+                          },
+                          onRender: (pages) {
+                            print('Rendered PDF with $pages pages');
+                          },
+                        ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton.icon(
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      label: const Text(
+                        'Đóng',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      style: TextButton.styleFrom(
+                        side: const BorderSide(color: Colors.grey),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(35.0),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 12.0,
+                        ),
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.download, color: Colors.white),
+                      label: const Text('Tải về'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 12.0,
+                        ),
+                      ),
+                      onPressed: () async {
+                        try {
+                          final downloadPath = await reservationManager
+                              .saveInvoiceToDownloads(filePath);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content:
+                                  Text('Tệp đã được tải về: $downloadPath'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } catch (error) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Không thể tải về tệp'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // void _showInvoiceDialog(BuildContext context, String filePath) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) {
+  //       return Dialog(
+  //         child: SizedBox(
+  //           height: 600,
+  //           width: 400,
+  //           child: filePath.isEmpty
+  //               ? const Center(child: CircularProgressIndicator())
+  //               : PDFView(
+  //                   filePath: filePath,
+  //                   enableSwipe: true,
+  //                   swipeHorizontal: true,
+  //                   autoSpacing: false,
+  //                   pageSnap: true,
+  //                   pageFling: true,
+  //                   onError: (error) {
+  //                     print(error.toString());
+  //                   },
+  //                   onRender: (pages) {
+  //                     print('Rendered PDF with $pages pages');
+  //                   },
+  //                 ),
+  //         ),
+
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -244,7 +374,32 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                                   }
                                 },
                               )
-                            : const SizedBox(),
+                            : reservation.status == 'Đã trả phòng'
+                                ? ElevatedButton.icon(
+                                    icon: const Icon(Icons.picture_as_pdf,
+                                        color: Colors.blue),
+                                    label: const Text('Xuất hóa đơn'),
+                                    onPressed: () async {
+                                      try {
+                                        final invoicePdfUrl =
+                                            await reservationManager
+                                                .fetchInvoicePdf(
+                                                    reservation.id);
+                                        _showInvoiceDialog(context,
+                                            invoicePdfUrl, reservationManager);
+                                      } catch (error) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content:
+                                                Text('Không thể xuất hóa đơn'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  )
+                                : const SizedBox(),
                       ),
                     ),
                   ],
