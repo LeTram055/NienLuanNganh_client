@@ -60,4 +60,18 @@ class CustomerManager with ChangeNotifier {
 
     notifyListeners();
   }
+
+  Future<void> changePassword(
+      String username, String oldPassword, String newPassword) async {
+    try {
+      // Gọi dịch vụ đổi mật khẩu từ backend
+
+      await _authService.changePassword(username, oldPassword, newPassword);
+      _statusMessage = 'Đổi mật khẩu thành công';
+      notifyListeners();
+    } catch (error) {
+      _statusMessage = '${error.toString()}';
+      notifyListeners();
+    }
+  }
 }

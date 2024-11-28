@@ -65,19 +65,6 @@ class CustomerService {
       }),
     );
 
-    // print("response-login: ${response.body}");
-    // if (response.statusCode == 200 &&
-    //     response.headers['content-type']?.contains('application/json') ==
-    //         true) {
-    //   final responseData = json.decode(response.body);
-    //   return 'Đăng nhập thành công: ${responseData['message']}';
-    // } else {
-    //   // In ra mã lỗi và phản hồi HTML
-    //   print('Error: ${response.statusCode}');
-    //   print('Response: ${response.body}');
-    //   return '${response.body}';
-    // }
-
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
 
@@ -85,6 +72,26 @@ class CustomerService {
     } else {
       final responseData = json.decode(response.body);
       return responseData['message'] ?? 'Đăng nhập thất bại';
+    }
+  }
+
+  Future<Map<String, dynamic>> changePassword(
+      String username, String currentPassword, String newPassword) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/changepassword'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'username': username,
+        'current_password': currentPassword,
+        'new_password': newPassword,
+      }),
+    );
+    print('Error: ${response.statusCode}');
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      final responseData = json.decode(response.body);
+      throw Exception(responseData['message'] ?? 'Lỗi không xác định');
     }
   }
 }
