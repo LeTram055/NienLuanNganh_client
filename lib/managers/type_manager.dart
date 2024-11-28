@@ -30,6 +30,7 @@ class TypeManager extends ChangeNotifier {
       _roomTypes =
           response.map<RoomType>((data) => RoomType.fromJson(data)).toList();
       _errorMessage = null;
+      resetFilters();
     } catch (error) {
       _errorMessage = error.toString();
     }

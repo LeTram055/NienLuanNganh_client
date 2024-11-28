@@ -20,9 +20,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    final typeManager = Provider.of<TypeManager>(context, listen: false);
-    typeManager.fetchRoomTypes();
-    typeManager.resetFilters();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final typeManager = Provider.of<TypeManager>(context, listen: false);
+      typeManager.fetchRoomTypes();
+    });
   }
 
   @override
