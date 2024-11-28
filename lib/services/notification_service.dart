@@ -35,4 +35,13 @@ class NotificationService {
       throw Exception('Thất bại khi tạo thông báo');
     }
   }
+
+  Future<void> deleteNotification(int notificationId) async {
+    final response =
+        await http.delete(Uri.parse('$baseUrl/notifications/$notificationId'));
+    print('Error: ${response.statusCode}');
+    if (response.statusCode != 200) {
+      throw Exception('Thất bại khi xóa thông báo');
+    }
+  }
 }

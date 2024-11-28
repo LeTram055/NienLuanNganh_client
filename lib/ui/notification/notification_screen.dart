@@ -56,6 +56,53 @@ class NotificationsScreen extends StatelessWidget {
                           'Ngày: ${notification.createdAt}',
                           style: const TextStyle(fontSize: 14),
                         ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Xác nhận'),
+                                content: const Text(
+                                    'Bạn có chắc chắn muốn xóa thông báo này?'),
+                                actions: [
+                                  TextButton(
+                                    child: const Text('Hủy'),
+                                    onPressed: () =>
+                                        Navigator.of(ctx).pop(false),
+                                  ),
+                                  TextButton(
+                                    child: const Text('Xóa'),
+                                    onPressed: () =>
+                                        Navigator.of(ctx).pop(true),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true) {
+                              try {
+                                await Provider.of<NotificationManager>(context,
+                                        listen: false)
+                                    .deleteNotification(
+                                        notification.id, customerId);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Đã xóa thông báo!'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              } catch (error) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Không thể xóa thông báo!'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                        ),
                       ),
                     );
                   },

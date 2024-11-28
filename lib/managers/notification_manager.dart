@@ -27,4 +27,14 @@ class NotificationManager with ChangeNotifier {
       rethrow;
     }
   }
+
+  Future<void> deleteNotification(int notificationId, int customerId) async {
+    try {
+      await _service.deleteNotification(notificationId);
+      await loadNotifications(
+          customerId); // Cập nhật danh sách thông báo sau khi xóa
+    } catch (error) {
+      rethrow;
+    }
+  }
 }
