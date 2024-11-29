@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hotelmanagement/ui/customer/login_screen.dart';
 import 'package:hotelmanagement/ui/customer/register_screen.dart';
@@ -7,7 +8,14 @@ import 'package:provider/provider.dart';
 import 'ui/screens.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
+
+  // Khóa chế độ xoay màn hình
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp, // Chỉ cho phép dọc đứng
+  ]);
+
   runApp(const MyApp());
 }
 
